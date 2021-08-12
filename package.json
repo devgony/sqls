@@ -1,0 +1,17 @@
+{
+  "name": "sqls",
+  "version": "1.0.0",
+  "main": "createTable.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "node-sql-parser": "^3.6.3",
+    "node-sqlparser": "^1.0.4"
+  },
+  "type": "module"
+}

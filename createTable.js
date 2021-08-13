@@ -1,9 +1,10 @@
 import clipboardy from "clipboardy";
 import fs from "fs";
+import { comment, parseOwner } from "./hooks.js";
 
 let output = "";
 let schemas = [];
-fs.readFile("rs.sql", "utf8", function (err, data) {
+fs.readFile("target.sql", "utf8", function (err, data) {
   let createSts = data.match(/CREATE\s+TABLE\s+\w+\s+\(.+?[^\d]\)/gis);
   createSts.forEach(
     st => {
@@ -14,7 +15,7 @@ fs.readFile("rs.sql", "utf8", function (err, data) {
         .trim()
         .split(/,(?!.*\))/g);
       columnSts.forEach(c => {
-        let words = c.trim().split(/\s+(?!.*\))/g);
+        let words = c.trim().match(/\w+(\(\w*\))*/g);
         let column = words[0];
         let type = words[1];
         if (type && type.match(/NOT/i) && column.match(/RTPN_CHNL_DVSN_CODE/)) {
@@ -35,20 +36,16 @@ fs.readFile("rs.sql", "utf8", function (err, data) {
     //   });
     // })
   );
+
+  let commentSts = data.match(/COMMENT\s+ON\s+COLUMN\s+.*(?=;)/g);
+  commentSts.forEach(c => {
+    let words = c.split(/\s+/);
+    comment(words, schemas);
+  });
+
   let output = schemas.reduce((acc, cur, i) => {
     let line = Object.values(cur).reduce((acc, cur) => `${acc}\t${cur}`);
     return `${acc}${i == 0 ? "" : "\n"}${line}`;
   }, "");
   console.log(output);
 });
-
-const parseOwner = source => {
-  let owner, tableName;
-  if (source.match(/\./)) {
-    [owner, tableName] = source.split(".");
-  } else {
-    tableName = source;
-  }
-  //owner = owner ? owner : "SYSADMIN";
-  return [owner, tableName];
-};
